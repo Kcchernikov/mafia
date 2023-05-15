@@ -1,0 +1,15 @@
+version: "3.4"
+services:
+  server:
+    build: .
+    container_name: server
+    hostname: "server"
+    command: python3 /server.py
+    # Перезапускаем сервис в случае падения 
+    restart: on-failure
+    # Прокладывам путь для файлов
+    volumes:
+      - ./:/server
+    # Открываем порт в контейнер
+    ports:
+      - "9000:9000/tcp"
