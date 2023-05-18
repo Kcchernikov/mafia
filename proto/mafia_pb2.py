@@ -13,23 +13,33 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0bmafia.proto\x12\x05mafia\"\x1a\n\x07Request\x12\x0f\n\x07message\x18\x01 \x01(\t\"!\n\x11\x43hooseRoomRequest\x12\x0c\n\x04room\x18\x01 \x01(\x05\":\n\x08Response\x12\x1d\n\x06status\x18\x01 \x01(\x0e\x32\r.mafia.Status\x12\x0f\n\x07message\x18\x02 \x01(\t\"W\n\x0eMemberResponse\x12\x0f\n\x07unnamed\x18\x01 \x01(\x05\x12\x11\n\tconnected\x18\x02 \x01(\t\x12!\n\x08response\x18\x03 \x01(\x0b\x32\x0f.mafia.Response*\x1f\n\x06Status\x12\x0b\n\x07SUCCESS\x10\x00\x12\x08\n\x04\x46\x41IL\x10\x01\x32\xd6\x01\n\x05Mafia\x12,\n\x07\x43onnect\x12\x0e.mafia.Request\x1a\x0f.mafia.Response\"\x00\x12\x39\n\nChooseRoom\x12\x18.mafia.ChooseRoomRequest\x1a\x0f.mafia.Response\"\x00\x12,\n\x07SetName\x12\x0e.mafia.Request\x1a\x0f.mafia.Response\"\x00\x12\x36\n\tWaitStart\x12\x0e.mafia.Request\x1a\x15.mafia.MemberResponse\"\x00\x30\x01\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0bmafia.proto\x12\x05mafia\"D\n\x04Info\x12\x1d\n\x06\x61\x63tion\x18\x01 \x01(\x0e\x32\r.mafia.Action\x12\x0c\n\x04send\x18\x02 \x01(\t\x12\x0f\n\x07receive\x18\x03 \x01(\t\"\x1a\n\x07Request\x12\x0f\n\x07message\x18\x01 \x01(\t\"!\n\x11\x43hooseRoomRequest\x12\x0c\n\x04room\x18\x01 \x01(\x05\":\n\x08Response\x12\x1d\n\x06status\x18\x01 \x01(\x0e\x32\r.mafia.Status\x12\x0f\n\x07message\x18\x02 \x01(\t\"W\n\x0eMemberResponse\x12\x0f\n\x07unnamed\x18\x01 \x01(\x05\x12\x11\n\tconnected\x18\x02 \x01(\t\x12!\n\x08response\x18\x03 \x01(\x0b\x32\x0f.mafia.Response\"\x1e\n\x0bGameRequest\x12\x0f\n\x07message\x18\x01 \x01(\t\"\xb1\x01\n\x0cGameResponse\x12!\n\x08response\x18\x01 \x01(\x0b\x32\x0f.mafia.Response\x12\x0f\n\x07message\x18\x02 \x01(\t\x12\x19\n\x04role\x18\x03 \x01(\x0e\x32\x0b.mafia.Role\x12\x0b\n\x03\x64\x61y\x18\x04 \x01(\x05\x12\r\n\x05\x61live\x18\x05 \x03(\t\x12\x19\n\x04info\x18\x06 \x01(\x0b\x32\x0b.mafia.Info\x12\x1b\n\x06winner\x18\x07 \x01(\x0e\x32\x0b.mafia.Role*\x1f\n\x06Status\x12\x0b\n\x07SUCCESS\x10\x00\x12\x08\n\x04\x46\x41IL\x10\x01*+\n\x04Role\x12\t\n\x05MAFIA\x10\x00\x12\x0b\n\x07SHERIFF\x10\x01\x12\x0b\n\x07\x43ITIZEN\x10\x02*9\n\x06\x41\x63tion\x12\x08\n\x04VOTE\x10\x00\x12\x08\n\x04KILL\x10\x01\x12\t\n\x05\x43HECK\x10\x02\x12\x10\n\x0cPUBLISH_DATA\x10\x03\x32\xf1\x03\n\x05Mafia\x12,\n\x07\x43onnect\x12\x0e.mafia.Request\x1a\x0f.mafia.Response\"\x00\x12\x39\n\nChooseRoom\x12\x18.mafia.ChooseRoomRequest\x1a\x0f.mafia.Response\"\x00\x12,\n\x07SetName\x12\x0e.mafia.Request\x1a\x0f.mafia.Response\"\x00\x12\x36\n\tWaitStart\x12\x0e.mafia.Request\x1a\x15.mafia.MemberResponse\"\x00\x30\x01\x12\x36\n\x0bGameProcess\x12\x0e.mafia.Request\x1a\x13.mafia.GameResponse\"\x00\x30\x01\x12)\n\x04Vote\x12\x0e.mafia.Request\x1a\x0f.mafia.Response\"\x00\x12-\n\x08SetReady\x12\x0e.mafia.Request\x1a\x0f.mafia.Response\"\x00\x12)\n\x04Kill\x12\x0e.mafia.Request\x1a\x0f.mafia.Response\"\x00\x12*\n\x05\x43heck\x12\x0e.mafia.Request\x1a\x0f.mafia.Response\"\x00\x12\x30\n\x0bPublishData\x12\x0e.mafia.Request\x1a\x0f.mafia.Response\"\x00\x62\x06proto3')
 
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, globals())
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'mafia_pb2', globals())
 if _descriptor._USE_C_DESCRIPTORS == False:
 
   DESCRIPTOR._options = None
-  _STATUS._serialized_start=234
-  _STATUS._serialized_end=265
-  _REQUEST._serialized_start=22
-  _REQUEST._serialized_end=48
-  _CHOOSEROOMREQUEST._serialized_start=50
-  _CHOOSEROOMREQUEST._serialized_end=83
-  _RESPONSE._serialized_start=85
-  _RESPONSE._serialized_end=143
-  _MEMBERRESPONSE._serialized_start=145
-  _MEMBERRESPONSE._serialized_end=232
-  _MAFIA._serialized_start=268
-  _MAFIA._serialized_end=482
+  _STATUS._serialized_start=516
+  _STATUS._serialized_end=547
+  _ROLE._serialized_start=549
+  _ROLE._serialized_end=592
+  _ACTION._serialized_start=594
+  _ACTION._serialized_end=651
+  _INFO._serialized_start=22
+  _INFO._serialized_end=90
+  _REQUEST._serialized_start=92
+  _REQUEST._serialized_end=118
+  _CHOOSEROOMREQUEST._serialized_start=120
+  _CHOOSEROOMREQUEST._serialized_end=153
+  _RESPONSE._serialized_start=155
+  _RESPONSE._serialized_end=213
+  _MEMBERRESPONSE._serialized_start=215
+  _MEMBERRESPONSE._serialized_end=302
+  _GAMEREQUEST._serialized_start=304
+  _GAMEREQUEST._serialized_end=334
+  _GAMERESPONSE._serialized_start=337
+  _GAMERESPONSE._serialized_end=514
+  _MAFIA._serialized_start=654
+  _MAFIA._serialized_end=1151
 # @@protoc_insertion_point(module_scope)

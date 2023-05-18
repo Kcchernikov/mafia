@@ -7,11 +7,36 @@ service Mafia {
     rpc ChooseRoom(ChooseRoomRequest) returns (Response) {}
     rpc SetName(Request) returns (Response) {}
     rpc WaitStart(Request) returns (stream MemberResponse) {}
+    rpc GameProcess(Request) returns (stream GameResponse) {}
+    rpc Vote(Request) returns (Response) {}
+    rpc SetReady(Request) returns (Response) {}
+    rpc Kill(Request) returns (Response) {}
+    rpc Check(Request) returns (Response) {}
+    rpc PublishData(Request) returns (Response) {}
 }
 
 enum Status {
     SUCCESS = 0;
     FAIL    = 1;
+}
+
+enum Role {
+    MAFIA = 0;
+    SHERIFF = 1;
+    CITIZEN = 2;
+}
+
+enum Action {
+    VOTE = 0;
+    KILL = 1;
+    CHECK = 2;
+    PUBLISH_DATA = 3;
+}
+
+message Info {
+    Action action = 1;
+    string send = 2;
+    string receive = 3;
 }
 
 message Request {
@@ -31,4 +56,18 @@ message MemberResponse {
     int32 unnamed = 1;
     string connected = 2;
     Response response = 3;
+}
+
+message GameRequest {
+    string message = 1;
+}
+
+message GameResponse {
+    Response response = 1;
+    string message = 2;
+    Role role = 3;
+    int32 day = 4;
+    repeated string alive = 5;
+    Info info = 6;
+    Role winner = 7;
 }
