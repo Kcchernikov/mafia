@@ -1,5 +1,12 @@
 version: "3.4"
 services:
+  rabbitmq:
+    image: rabbitmq:3.10.7-management
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+    healthcheck:
+        test: "exit 0"
   server:
     build: .
     container_name: server
@@ -13,3 +20,8 @@ services:
     # Открываем порт в контейнер
     ports:
       - "9000:9000/tcp"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    links:
+      - rabbitmq

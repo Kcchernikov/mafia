@@ -8,6 +8,7 @@ import mafia_pb2_grpc
 
 import asyncio
 import random
+import pika
 
 players_quorum = 4
 time_async_sleep = 0.5
@@ -27,14 +28,19 @@ class Room:
         self.votes = dict()
         self.ready = 0
         self.mafia_vote = 0
-        self.sherif_vote = 0
+        self.sheriff_vote = 0
         self.is_dead_sheriff = False
         self.published = False
+        self.is_night = False
 
 class EService(mafia_pb2_grpc.MafiaServicer):
     def __init__(self):
         self.rooms = []
         self.players = dict()
+        self.conntection_params = pika.ConnectionParameters(host='rabbitmq', port=5672,
+            heartbeat=60000, blocked_connection_timeout=30000)
+        self.connection = pika.BlockingConnection(self.conntection_params)
+        self.channels = list()
 
     async def Connect(self, request, context):
         print("Received 'Connect' !", flush=True)
@@ -61,6 +67,11 @@ class EService(mafia_pb2_grpc.MafiaServicer):
         if request.room == -2:
             self.players[context.peer()].room = len(self.rooms)
             self.rooms.append(Room({context.peer()}))
+            if not self.connection or self.connection.is_closed:
+                self.connection = pika.BlockingConnection(self.conntection_params)
+            num = len(self.channels)
+            self.channels.append(self.connection.channel())
+            self.channels[num].exchange_declare(exchange=str(self.players[context.peer()].room), exchange_type='fanout')
         elif request.room == -1:
             found = False
             for i in range(len(self.rooms)):
@@ -72,6 +83,11 @@ class EService(mafia_pb2_grpc.MafiaServicer):
             if found == False:
                 self.players[context.peer()].room = len(self.rooms)
                 self.rooms.append(Room({context.peer()}))
+                num = len(self.channels)
+                if not self.connection or self.connection.is_closed:
+                    self.connection = pika.BlockingConnection(self.conntection_params)
+                self.channels.append(self.connection.channel())
+                self.channels[num].exchange_declare(exchange=str(self.players[context.peer()].room), exchange_type='fanout')
         elif (request.room >= len(self.rooms)
                 or len(self.rooms[request.room].members) >= players_quorum 
                 or self.rooms[request.room].is_started == True):
@@ -94,7 +110,7 @@ class EService(mafia_pb2_grpc.MafiaServicer):
                     message="Нельзя поменять комнату на туже самую"
                 )
         message += "Теперь вы находитесь в комнате номер " + str(self.players[context.peer()].room)
-        return mafia_pb2.Response(status = mafia_pb2.Status.SUCCESS, message=message)
+        return mafia_pb2.Response(status = mafia_pb2.Status.SUCCESS, message=message, room = self.players[context.peer()].room)
     
     async def SetName(self, request, context):
         print("Received 'SetName' !", flush=True)
@@ -102,6 +118,11 @@ class EService(mafia_pb2_grpc.MafiaServicer):
             return mafia_pb2.Response(
                 status = mafia_pb2.Status.FAIL,
                 message="Игрока с данным адрессом нет на сервере, переподключитесь, чтобы установить имя"
+            )
+        if request.message == "Server":
+            return mafia_pb2.Response(
+                status = mafia_pb2.Status.FAIL,
+                message="Имя 'Server' зарезервированно"
             )
         message = "Успешная установка имени"
         if self.players[context.peer()].room < 0:
@@ -298,6 +319,11 @@ class EService(mafia_pb2_grpc.MafiaServicer):
                 status = mafia_pb2.Status.FAIL,
                 message="Нельзя убивать себя"
             )
+        if not self.players[context.peer()].name in self.rooms[room_id].alive:
+            return mafia_pb2.Response(
+                status = mafia_pb2.Status.FAIL,
+                message="Вы дух и не можете убивать"
+            )
         self.rooms[room_id].mafia_vote = request.message
         return mafia_pb2.Response(
             status = mafia_pb2.Status.SUCCESS,
@@ -331,6 +357,11 @@ class EService(mafia_pb2_grpc.MafiaServicer):
             return mafia_pb2.Response(
                 status = mafia_pb2.Status.FAIL,
                 message="Нельзя проверять себя"
+            )
+        if not self.players[context.peer()].name in self.rooms[room_id].alive:
+            return mafia_pb2.Response(
+                status = mafia_pb2.Status.FAIL,
+                message="Вы дух и не можете проверять"
             )
         self.rooms[room_id].sheriff_vote = request.message
         message = "False"
@@ -373,7 +404,50 @@ class EService(mafia_pb2_grpc.MafiaServicer):
                 status = mafia_pb2.Status.FAIL,
                 message="Вы уже опубликовали данные"
             )
+        if not self.players[context.peer()].name in self.rooms[room_id].alive:
+            return mafia_pb2.Response(
+                status = mafia_pb2.Status.FAIL,
+                message="Вы дух и не можете публиковать данные"
+            )
         self.rooms[room_id].published = True
+        self.channels[room_id].basic_publish(
+            exchange=str(room_id),
+            routing_key='',
+            body = str(f"Server -> Комиссар нашел мафию, это оказался игрок '{self.rooms[room_id].sheriff_vote}'")
+        )
+        return mafia_pb2.Response(
+            status = mafia_pb2.Status.SUCCESS,
+            message = "Успешно"
+        )
+    
+    async def SendMessage(self, request, context):
+        print("Received 'SendMessage' !", flush=True)
+        if not context.peer() in self.players:
+            return mafia_pb2.Response(
+                status = mafia_pb2.Status.FAIL,
+                message="Игрока с данным адрессом нет на сервере, переподключитесь, чтобы установить имя"
+            )
+        room_id = self.players[context.peer()].room
+        if room_id < 0 or room_id > len(self.rooms):
+            return mafia_pb2.Response(
+                status = mafia_pb2.Status.FAIL,
+                message="Некорректный номер комнаты"
+            )
+        if not self.players[context.peer()].name in self.rooms[room_id].alive:
+            return mafia_pb2.Response(
+                status = mafia_pb2.Status.FAIL,
+                message="Вы дух и не можете отправлять данные"
+            )
+        if self.rooms[room_id].is_night:
+            return mafia_pb2.Response(
+                status = mafia_pb2.Status.FAIL,
+                message="Ночью сообщения запрещены"
+            )
+        self.channels[room_id].basic_publish(
+            exchange=str(room_id),
+            routing_key='',
+            body = str(self.players[context.peer()].name + " -> " + request.message)
+        )
         return mafia_pb2.Response(
             status = mafia_pb2.Status.SUCCESS,
             message = "Успешно"
@@ -537,6 +611,7 @@ class EService(mafia_pb2_grpc.MafiaServicer):
                 day = self.rooms[room_id].day,
                 alive = self.rooms[room_id].alive
             )
+            self.rooms[room_id].is_night = True
 
             while ((self.rooms[room_id].mafia_vote == 0) or 
                 (self.rooms[room_id].sheriff_vote == 0 and self.rooms[room_id].is_dead_sheriff == False)):
@@ -569,6 +644,7 @@ class EService(mafia_pb2_grpc.MafiaServicer):
                         alive = self.rooms[room_id].alive,
                         winner = mafia_pb2.Role.MAFIA
                     )
+            self.rooms[room_id].is_night = False
 
             
 async def serve():

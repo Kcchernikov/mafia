@@ -72,12 +72,14 @@ class Request(_message.Message):
     def __init__(self, message: _Optional[str] = ...) -> None: ...
 
 class Response(_message.Message):
-    __slots__ = ["message", "status"]
+    __slots__ = ["message", "room", "status"]
     MESSAGE_FIELD_NUMBER: _ClassVar[int]
+    ROOM_FIELD_NUMBER: _ClassVar[int]
     STATUS_FIELD_NUMBER: _ClassVar[int]
     message: str
+    room: int
     status: Status
-    def __init__(self, status: _Optional[_Union[Status, str]] = ..., message: _Optional[str] = ...) -> None: ...
+    def __init__(self, status: _Optional[_Union[Status, str]] = ..., message: _Optional[str] = ..., room: _Optional[int] = ...) -> None: ...
 
 class Status(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     __slots__ = []

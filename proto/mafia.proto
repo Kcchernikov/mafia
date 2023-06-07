@@ -13,6 +13,7 @@ service Mafia {
     rpc Kill(Request) returns (Response) {}
     rpc Check(Request) returns (Response) {}
     rpc PublishData(Request) returns (Response) {}
+    rpc SendMessage(Request) returns (Response) {}
 }
 
 enum Status {
@@ -50,6 +51,7 @@ message ChooseRoomRequest {
 message Response {
     Status status = 1;
     string message = 2;
+    int32 room = 3;
 }
 
 message MemberResponse {
